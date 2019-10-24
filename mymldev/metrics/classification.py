@@ -55,7 +55,7 @@ class ConfusionMatrix:
 
     @property
     def table_(self):
-        """numpy.array: Confusion Matrix."""
+        """`numpy.array`: Confusion Matrix."""
         if not self._cfm.size:
             self._cfm = mt.confusion_matrix(self.y, self.y_hat)
         return self._cfm
@@ -71,11 +71,8 @@ class ConfusionMatrix:
 
     @property
     def fp_(self):
-        """False Positives.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        False Positives.
         """
         if not self._fp.size:
             fp = self.table_.sum(axis=0) - np.diag(self.table_)
@@ -84,11 +81,8 @@ class ConfusionMatrix:
 
     @property
     def fn_(self):
-        """False Negatives.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        False Negatives.
         """
         if not self._fn.size:
             fn = self.table_.sum(axis=1) - np.diag(self.table_)
@@ -97,11 +91,8 @@ class ConfusionMatrix:
 
     @property
     def tp_(self):
-        """True Positives.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        True Positives.
         """
         if not self._tp.size:
             tp = np.diag(self.table_)
@@ -110,11 +101,8 @@ class ConfusionMatrix:
 
     @property
     def tn_(self):
-        """True Negatives.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        True Negatives.
         """
         if not self._tn.size:
             self._tn = self.table_.sum() - (self.fp_ + self.fn_ + self.tp_)
@@ -122,101 +110,71 @@ class ConfusionMatrix:
 
     @property
     def recall_(self):
-        """Sensitivity, Recall, Hit rate, or True Positive Rate.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        Sensitivity, Recall, Hit rate, or True Positive Rate.
         """
         return self.tp_ / (self.tp_ + self.fn_)
 
     @property
     def specificity_(self):
-        """Specificity, Selectivity, or True Negative Rate.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        Specificity, Selectivity, or True Negative Rate.
         """
         return self.tn_ / (self.tn_ + self.fp_)
 
     @property
     def precision_(self):
-        """Precision or Positive Predictive Value.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        Precision or Positive Predictive Value.
         """
         return self.tp_ / (self.tp_ + self.fp_)
 
     @property
     def negative_predictive_value_(self):
-        """Negative Predictive Value.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        Negative Predictive Value.
         """
         return self.tn_ / (self.tn_ + self.fn_)
 
     @property
     def false_negative_rate_(self):
-        """False Negative Rate or Miss Rate.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        False Negative Rate or Miss Rate.
         """
         return self.fn_ / (self.fn_ + self.tp_)
 
     @property
     def false_positive_rate_(self):
-        """False Positive Rate or Fall-out.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        False Positive Rate or Fall-out.
         """
         return self.fp_ / (self.fp_ + self.tn_)
 
     @property
     def false_discovery_rate_(self):
-        """False Discovery Rate.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        False Discovery Rate.
         """
         return self.fp_ / (self.fp_ + self.tp_)
 
     @property
     def false_omission_rate_(self):
-        """False Omission Rate.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        False Omission Rate.
         """
         return self.fn_ / (self.fn_ + self.tn_)
 
     @property
     def accuracy_(self):
-        """Accuracy.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        Accuracy.
         """
         return (self.tp_ + self.tn_) / (self.tp_ + self.tn_ + self.fp_ + self.fn_)
 
     @property
     def f1_score_(self):
-        """F1 Score.
-
-        Returns
-        -------
-        float, for binary classification else numpy.array.
+        """float, for binary classification else numpy.array:
+        F1 Score.
         """
         return (2 * self.tp_) / (2 * self.tp_ + self.fp_ + self.fn_)
 
@@ -339,6 +297,7 @@ class BinaryClassificationMetrics(ClassificationMetrics):
 
     @property
     def plot_roc_(self):
+        """`matplotlib.axes.Axes`: Plots ROC curve."""
         ax = plot_roc(self.y, self.predicted_proba)
         return ax
 
@@ -360,7 +319,7 @@ class BinaryClassificationMetrics(ClassificationMetrics):
 
     @property
     def gains_table_(self):
-        """pandas.DataFrame: Gains table."""
+        """`pandas.DataFrame`: Gains table."""
         if self._gains_table.empty:
             df = pd.DataFrame()
             df["y"] = self.y.values
@@ -409,7 +368,7 @@ class BinaryClassificationMetrics(ClassificationMetrics):
 
     @property
     def y_hat(self):
-        """np.array: Predicted values."""
+        """`numpy.array`: Predicted values."""
         self._y_hat = (self.target_proba > self.threshold).astype(bool)
         return self._y_hat
 
