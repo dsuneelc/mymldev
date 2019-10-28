@@ -12,12 +12,13 @@ def plot_confusion_matrix():
 def plot_roc(
     y_true: np.array,
     y_probas: np.array,
+    labels: dict = None,
+    classes_to_plot: list = None,
     title: str = "ROC Curve",
     plot_micro: bool = False,
     plot_macro: bool = False,
-    classes_to_plot: list = None,
     figsize: tuple = None,
-    cmap: str = "gist_ncar",
+    cmap: str = "Blues",
     title_fontsize: str = "large",
     text_fontsize: str = "medium",
 ):
@@ -29,17 +30,19 @@ def plot_roc(
         Actual taget values.
     y_probas : array_like, (n_samples, n_classes)
         Predicted probabilities of each class.
+    labels: dict, optional
+        labels for y.
+    classes_to_plot : list, optional
+        Classes for which the ROC curve should be plotted.
+        If the class doesn't exists it will be ignored.
+        If ``None``, all classes will be plotted
+        (the default is ``None``).
     title : str
         Title for the ROC.
     plot_micro : bool, optional
         Plot micro averaged ROC curve (the default is False)
     plot_macro : bool, optional
         Plot macro averaged ROC curve (the default is False)
-    classes_to_plot : list, optional
-        Classes for which the ROC curve should be plotted.
-        If the class doesn't exists it will be ignored.
-        If ``None``, all classes will be plotted
-        (the default is ``None``).
     figsize : tuple
         Size of the plot (the default is ``None``)
     cmap : str or `matplotlib.colors.Colormap` instance, optional
@@ -68,18 +71,19 @@ def plot_roc(
     ax.set_title(label=title, fontsize=title_fontsize)
     fpr_dict = {}
     tpr_dict = {}
-    indices_to_plot = np.in1d(classes_to_plot, classes)
+    indices_to_plot = np.in1d(classes, classes_to_plot)
     for i, to_plot in enumerate(indices_to_plot):
         fpr_dict[i], tpr_dict[i], _ = mt.roc_curve(y_true, y_probas[:, i], pos_label=classes[i])
         if to_plot:
             roc_auc = mt.auc(fpr_dict[i], tpr_dict[i])
             color = plt.cm.get_cmap(cmap)(float(i) / len(classes))
+            class_name = labels[classes[i]] if labels else classes[i]
             ax.plot(
                 fpr_dict[i],
                 tpr_dict[i],
                 lw=2,
                 color=color,
-                label=f"ROC curve of class {classes[i]} (area = {roc_auc:.2f})",
+                label=f"ROC curve of class {class_name} (area = {roc_auc:.2f})",
             )
     if plot_micro:
         binarized_y_true = label_binarize(y_true, classes=classes)

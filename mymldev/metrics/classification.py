@@ -298,7 +298,7 @@ class BinaryClassificationMetrics(ClassificationMetrics):
     @property
     def plot_roc_(self):
         """`matplotlib.axes.Axes`: Plots ROC curve."""
-        ax = plot_roc(self.y, self.predicted_proba)
+        ax = plot_roc(self.y, self.predicted_proba, labels=self.labels, classes_to_plot=[1])
         return ax
 
     @property
