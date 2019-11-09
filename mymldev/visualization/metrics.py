@@ -1,5 +1,7 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+from typing import Union, Optional
 import sklearn.metrics as mt
 from scipy import interp
 from sklearn.preprocessing import label_binarize
@@ -12,52 +14,55 @@ def plot_confusion_matrix():
 def plot_roc(
     y_true: np.array,
     y_probas: np.array,
-    labels: dict = None,
-    classes_to_plot: list = None,
+    labels: Optional[dict] = None,
+    classes_to_plot: Optional[list] = None,
+    plot_micro: Optional[bool] = False,
+    plot_macro: Optional[bool] = False,
     title: str = "ROC Curve",
-    plot_micro: bool = False,
-    plot_macro: bool = False,
-    figsize: tuple = None,
-    cmap: str = "Blues",
-    title_fontsize: str = "large",
-    text_fontsize: str = "medium",
+    ax: Optional[matplotlib.axes.Axes] = None,
+    figsize: Optional[tuple] = None,
+    cmap: Union[str, matplotlib.colors.Colormap] = "Blues",
+    title_fontsize: Union[str, int] = "large",
+    text_fontsize: Union[str, int] = "medium",
 ):
     """Plot ROC curve.
 
     Parameters
     ----------
-    y_true : array_like, (n_samples,)
-        Actual taget values.
-    y_probas : array_like, (n_samples, n_classes)
+    y_true : numpy.array, (n_samples,)
+        Actual target values.
+    y_probas : numpy.array, (n_samples, n_classes)
         Predicted probabilities of each class.
-    labels: dict, optional
+    labels: Optional[dict]
         labels for y.
-    classes_to_plot : list, optional
+    classes_to_plot : Optional[list]
         Classes for which the ROC curve should be plotted.
         If the class doesn't exists it will be ignored.
         If ``None``, all classes will be plotted
         (the default is ``None``).
+    plot_micro : Optional[bool]
+        Plot micro averaged ROC curve (the default is False)
+    plot_macro : Optional[bool]
+        Plot macro averaged ROC curve (the default is False)
     title : str
         Title for the ROC.
-    plot_micro : bool, optional
-        Plot micro averaged ROC curve (the default is False)
-    plot_macro : bool, optional
-        Plot macro averaged ROC curve (the default is False)
-    figsize : tuple
-        Size of the plot (the default is ``None``)
-    cmap : str or `matplotlib.colors.Colormap` instance, optional
+    ax: Optional[`matplotlib.axes.Axes`] object
+        The axes on which plot was drawn.
+    figsize : Optional[tuple]
+        Size of the plot. 
+    cmap : Union[str, `matplotlib.colors.Colormap`]
         Colormap used for plotting.
         https://matplotlib.org/tutorials/colors/colormaps.html
-    title_fontsize : str or int, optional
+    title_fontsize : Union[str, int]
         Use 'small', 'medium', 'large' or integer-values
         (the default is 'large')
-    text_fontsize : str or int, optional
+    text_fontsize : Union[str, int]
         Use 'small', 'medium', 'large' or integer-values
         (the default is 'medium')
 
     Returns
     -------
-    ax : `matplotlib.axes.Axes` object
+    `matplotlib.axes.Axes` object
         The axes on which plot was drawn.
 
     References
@@ -67,7 +72,8 @@ def plot_roc(
     classes = np.unique(y_true)
     if not classes_to_plot:
         classes_to_plot = classes
-    fig, ax = plt.subplots(figsize=figsize)
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize)
     ax.set_title(label=title, fontsize=title_fontsize)
     fpr_dict = {}
     tpr_dict = {}
@@ -127,8 +133,74 @@ def plot_roc(
     return ax
 
 
-def plot_precision_recall():
-    raise NotImplementedError
+def plot_precision_recall(
+    y_true: np.array,
+    y_probas: np.array,
+    labels: Optional[dict] = None,
+    classes_to_plot: Optional[list] = None,
+    plot_micro: Optional[bool] = False,
+    title: str = "Precision-Recall Curve",
+    ax: Optional[matplotlib.axes.Axes] = None,
+    figsize: Optional[tuple] = None,
+    cmap: Union[str, matplotlib.colors.Colormap] = "Blues",
+    title_fontsize: Union[str, int] = "large",
+    text_fontsize: Union[str, int] = "medium"
+):
+    """Plots precision-recall curve.
+
+    Parameters
+    ----------
+    y_true : numpy.array, (n_samples,)
+        Actual target values.
+    y_probas : numpy.array, (n_samples, n_classes)
+        Predicted probabilities of each class.
+    labels: Optional[dict]
+        labels for y.
+    classes_to_plot : Optional[list]
+        Classes for which the Precision-Recall curve should be plotted.
+        If the class doesn't exists it will be ignored.
+        If ``None``, all classes will be plotted
+        (the default is ``None``).
+    plot_micro : Optional[bool]
+        Plot micro averaged Precision-Recall curve (the default is False)
+    title : str
+        Title for the Precision-Recall curve.
+    ax: Optional[matplotlib.axes.Axes]
+        The axes on which plot was drawn.
+    figsize : Optional[tuple]
+        Size of the plot.
+    cmap : Union[str, matplotlib.colors.Colormap]
+        Colormap used for plotting.
+        https://matplotlib.org/tutorials/colors/colormaps.html
+    title_fontsize : Union[str, int]
+        Use 'small', 'medium', 'large' or integer-values
+        (the default is 'large')
+    text_fontsize : Union[str, int]
+        Use 'small', 'medium', 'large' or integer-values
+        (the default is 'medium')
+
+    Returns
+    -------
+    `matplotlib.axes.Axes` object
+        The axes on which plot was drawn.
+
+    References
+    ----------
+    .. [1] https://github.com/reiinakano/scikit-plot
+    """
+    classes = np.unique(y_true)
+    if not classes_to_plot:
+        classes_to_plot = classes
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize)
+    ax.set_title(label=title, fontsize=title_fontsize)
+    binarized_y_true = label_binarize(y_true, classes=classes)
+    if len(classes) == 2:
+        binarized_y_true = np.hstack((1-binarized_y_true, binarized_y_true))
+    indices_to_plot = np.in1d(classes, classes_to_plot)
+    for i, to_plot in enumerate(indices_to_plot):
+        if to_plot:
+            average_precision = 
 
 
 def plot_cumulative_gain():
