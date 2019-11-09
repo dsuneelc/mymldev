@@ -1,1 +1,1 @@
-from .classification import BinaryClassificationMetrics
+from .classification import BinaryClassificationMetrics, MultiClassClassificationMetrics

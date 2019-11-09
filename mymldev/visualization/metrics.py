@@ -49,7 +49,7 @@ def plot_roc(
     ax: Optional[`matplotlib.axes.Axes`] object
         The axes on which plot was drawn.
     figsize : Optional[tuple]
-        Size of the plot. 
+        Size of the plot.
     cmap : Union[str, `matplotlib.colors.Colormap`]
         Colormap used for plotting.
         https://matplotlib.org/tutorials/colors/colormaps.html
@@ -200,7 +200,8 @@ def plot_precision_recall(
     indices_to_plot = np.in1d(classes, classes_to_plot)
     for i, to_plot in enumerate(indices_to_plot):
         if to_plot:
-            average_precision = 
+            pass
+    return None
 
 
 def plot_cumulative_gain():

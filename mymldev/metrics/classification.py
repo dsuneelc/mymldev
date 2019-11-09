@@ -6,7 +6,7 @@ import sklearn.metrics as mt
 
 from ..visualization.metrics import plot_roc
 
-__all__ = ["BinaryClassificationMetrics", "ConfusionMatrix"]
+__all__ = ["ConfusionMatrix", "BinaryClassificationMetrics", "MultiClassClassificationMetrics"]
 
 
 class ConfusionMatrix:
@@ -21,10 +21,6 @@ class ConfusionMatrix:
 
     Attributes
     ----------
-    y : numpy.array
-        True values.
-    y_hat : numpy.array
-        Predicted values.
     __binary_y : bool
         Check whether DV is binary or not.
     _cfm : numpy.array
@@ -330,10 +326,7 @@ class BinaryClassificationMetrics(ClassificationMetrics):
                 df["Decile"] = pd.qcut(df["pred_prob"].rank(method="first"), 10, labels=False)
             df = df.rename_axis("unique_id").reset_index()
             lift_df = (
-                df.groupby(["Decile", "y"])["unique_id"]
-                .count()
-                .unstack("y")
-                .sort_index(ascending=False)
+                df.groupby(["Decile", "y"])["unique_id"].count().unstack("y").sort_index(ascending=False)
             )
             lift_df = lift_df.fillna(0).astype(int)
             lift_df.index = np.arange(10)
@@ -405,11 +398,13 @@ class BinaryClassificationMetrics(ClassificationMetrics):
             self.labels = {}
         label_0 = self.labels.get(0, 0)
         label_1 = self.labels.get(1, 1)
-        table = pd.DataFrame(
-            confusion_matrix.table_, columns=[label_0, label_1], index=[label_0, label_1]
-        )
+        table = pd.DataFrame(confusion_matrix.table_, columns=[label_0, label_1], index=[label_0, label_1])
         self.cfm = table.rename_axis(f"threshold ({self.threshold})").reset_index()
         return confusion_matrix
+
+
+class MultiClassClassificationMetrics:
+    pass
 
 
 if __name__ == "__main__":
