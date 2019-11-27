@@ -12,8 +12,8 @@ def plot_confusion_matrix():
 
 
 def plot_roc(
-    y_true: np.array,
-    y_probas: np.array,
+    y_true: np.ndarray,
+    y_probas: np.ndarray,
     labels: Optional[dict] = None,
     classes_to_plot: Optional[list] = None,
     plot_micro: Optional[bool] = False,
@@ -77,9 +77,11 @@ def plot_roc(
     ax.set_title(label=title, fontsize=title_fontsize)
     fpr_dict = {}
     tpr_dict = {}
-    indices_to_plot = np.in1d(classes, classes_to_plot)
+    indices_to_plot = np.isin(classes, classes_to_plot)
     for i, to_plot in enumerate(indices_to_plot):
-        fpr_dict[i], tpr_dict[i], _ = mt.roc_curve(y_true, y_probas[:, i], pos_label=classes[i])
+        fpr_dict[i], tpr_dict[i], _ = mt.roc_curve(
+            y_true, y_probas[:, i], pos_label=classes[i]
+        )
         if to_plot:
             roc_auc = mt.auc(fpr_dict[i], tpr_dict[i])
             color = plt.cm.get_cmap(cmap)(float(i) / len(classes))
@@ -94,7 +96,9 @@ def plot_roc(
     if plot_micro:
         binarized_y_true = label_binarize(y_true, classes=classes)
         if len(classes) == 2:
-            binarized_y_true = np.hstack((1 - binarized_y_true, binarized_y_true))
+            binarized_y_true = np.hstack(
+                (1 - binarized_y_true, binarized_y_true)
+            )
         fpr, tpr, _ = mt.roc_curve(binarized_y_true.ravel(), y_probas.ravel())
         roc_auc = mt.auc(tpr, fpr)
         ax.plot(
@@ -108,7 +112,9 @@ def plot_roc(
     if plot_macro:
         # Compute macro-average ROC curve and it's area.
         # First aggregate all the false positive rates
-        all_fpr = np.unique(np.concatenate([fpr_dict[i] for i, _ in enumerate(classes)]))
+        all_fpr = np.unique(
+            np.concatenate([fpr_dict[i] for i, _ in enumerate(classes)])
+        )
         # Then interpolate all ROC curves at this points
         mean_tpr = np.zeros_like(all_fpr)
         for i, _ in enumerate(classes):
@@ -134,8 +140,8 @@ def plot_roc(
 
 
 def plot_precision_recall(
-    y_true: np.array,
-    y_probas: np.array,
+    y_true: np.ndarray,
+    y_probas: np.ndarray,
     labels: Optional[dict] = None,
     classes_to_plot: Optional[list] = None,
     plot_micro: Optional[bool] = False,
@@ -144,7 +150,7 @@ def plot_precision_recall(
     figsize: Optional[tuple] = None,
     cmap: Union[str, matplotlib.colors.Colormap] = "Blues",
     title_fontsize: Union[str, int] = "large",
-    text_fontsize: Union[str, int] = "medium"
+    text_fontsize: Union[str, int] = "medium",
 ):
     """Plots precision-recall curve.
 
@@ -154,8 +160,8 @@ def plot_precision_recall(
         Actual target values.
     y_probas : numpy.array, (n_samples, n_classes)
         Predicted probabilities of each class.
-    labels: Optional[dict]
-        labels for y.
+    labels: Optional[dict] 
+        labels for y, eg: {0: 'negative', 1: 'positive'}.
     classes_to_plot : Optional[list]
         Classes for which the Precision-Recall curve should be plotted.
         If the class doesn't exists it will be ignored.
@@ -196,12 +202,51 @@ def plot_precision_recall(
     ax.set_title(label=title, fontsize=title_fontsize)
     binarized_y_true = label_binarize(y_true, classes=classes)
     if len(classes) == 2:
-        binarized_y_true = np.hstack((1-binarized_y_true, binarized_y_true))
-    indices_to_plot = np.in1d(classes, classes_to_plot)
+        binarized_y_true = np.hstack((1 - binarized_y_true, binarized_y_true))
+    indices_to_plot = np.isin(classes, classes_to_plot)
     for i, to_plot in enumerate(indices_to_plot):
         if to_plot:
-            pass
-    return None
+            average_precision = mt.average_precision_score(
+                binarized_y_true[:, i], y_probas[:, i]
+            )
+            precision, recall, _ = mt.precision_recall_curve(
+                y_true, y_probas[:, i], pos_label=classes[i]
+            )
+            color = plt.cm.get_cmap(cmap)(float(i) / len(classes))
+            class_name = labels[classes[i]] if labels else classes[i]
+            ax.plot(
+                recall,
+                precision,
+                lw=2,
+                color=color,
+                label=(
+                    f"Precision-recall curve of class {class_name} "
+                    f"(area = {average_precision:.2f})"
+                ),
+            )
+    if plot_micro:
+        precision, recall, _ = mt.precision_recall_curve(
+            binarized_y_true.ravel(), y_probas.ravel()
+        )
+        average_precision = mt.average_precision_score(
+            binarized_y_true, y_probas, average="micro"
+        )
+        ax.plot(
+            recall,
+            precision,
+            color="deeppink",
+            linestyle=":",
+            linewidth=4,
+            label=(f"micro-average Precision-recall curve "
+                   f"(area = {average_precision:.2f})"),
+        )
+    ax.set_xlim([0.0, 1.0])
+    ax.set_ylim([0.0, 1.05])
+    ax.set_xlabel('Recall')
+    ax.set_ylabel('Precision')
+    ax.tick_params(labelsize=text_fontsize)
+    ax.legend(loc='best', fontsize=text_fontsize)
+    return ax 
 
 
 def plot_cumulative_gain():
