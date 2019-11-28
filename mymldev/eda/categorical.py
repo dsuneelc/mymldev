@@ -1,21 +1,11 @@
-#!/usr/bin/env python3
-#-*- coding: utf-8 -*-
-"""
-Filename: categorical
-Date: 2019-05-09 11:28
-Project: mymldev
-AUTHOR: Suneel Dondapati
-"""
+__all__ = [
+    'cramers_corrected_stat',
+]
 
 
 import numpy as np
 import pandas as pd
 import scipy.stats as ss
-
-
-__all__ = [
-    'cramers_corrected_stat',
-]
 
 
 def cramers_corrected_stat(confusion_matrix: pd.DataFrame):

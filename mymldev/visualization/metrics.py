@@ -160,7 +160,7 @@ def plot_precision_recall(
         Actual target values.
     y_probas : numpy.array, (n_samples, n_classes)
         Predicted probabilities of each class.
-    labels: Optional[dict] 
+    labels: Optional[dict]
         labels for y, eg: {0: 'negative', 1: 'positive'}.
     classes_to_plot : Optional[list]
         Classes for which the Precision-Recall curve should be plotted.
@@ -246,7 +246,7 @@ def plot_precision_recall(
     ax.set_ylabel('Precision')
     ax.tick_params(labelsize=text_fontsize)
     ax.legend(loc='best', fontsize=text_fontsize)
-    return ax 
+    return ax
 
 
 def plot_cumulative_gain():
