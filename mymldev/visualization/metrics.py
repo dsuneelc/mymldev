@@ -1,7 +1,7 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import Union, Optional
+from typing import Union, Optional, List, Tuple, Dict
 import sklearn.metrics as mt
 from scipy import interp
 from sklearn.preprocessing import label_binarize
@@ -79,9 +79,7 @@ def plot_roc(
     tpr_dict = {}
     indices_to_plot = np.isin(classes, classes_to_plot)
     for i, to_plot in enumerate(indices_to_plot):
-        fpr_dict[i], tpr_dict[i], _ = mt.roc_curve(
-            y_true, y_probas[:, i], pos_label=classes[i]
-        )
+        fpr_dict[i], tpr_dict[i], _ = mt.roc_curve(y_true, y_probas[:, i], pos_label=classes[i])
         if to_plot:
             roc_auc = mt.auc(fpr_dict[i], tpr_dict[i])
             color = plt.cm.get_cmap(cmap)(float(i) / len(classes))
@@ -91,20 +89,18 @@ def plot_roc(
                 tpr_dict[i],
                 lw=2,
                 color=color,
-                label=f"ROC curve of class {class_name} (area = {roc_auc:.2f})",
+                label=f"ROC curve of class {class_name} (AUC= {roc_auc:.2f})",
             )
     if plot_micro:
         binarized_y_true = label_binarize(y_true, classes=classes)
         if len(classes) == 2:
-            binarized_y_true = np.hstack(
-                (1 - binarized_y_true, binarized_y_true)
-            )
+            binarized_y_true = np.hstack((1 - binarized_y_true, binarized_y_true))
         fpr, tpr, _ = mt.roc_curve(binarized_y_true.ravel(), y_probas.ravel())
         roc_auc = mt.auc(tpr, fpr)
         ax.plot(
             fpr,
             tpr,
-            label=f"micro-average ROC curve (area = {roc_auc:.2f})",
+            label=f"micro-average ROC curve (AUC = {roc_auc:.2f})",
             color="deeppink",
             linestyle=":",
             linewidth=4,
@@ -112,9 +108,7 @@ def plot_roc(
     if plot_macro:
         # Compute macro-average ROC curve and it's area.
         # First aggregate all the false positive rates
-        all_fpr = np.unique(
-            np.concatenate([fpr_dict[i] for i, _ in enumerate(classes)])
-        )
+        all_fpr = np.unique(np.concatenate([fpr_dict[i] for i, _ in enumerate(classes)]))
         # Then interpolate all ROC curves at this points
         mean_tpr = np.zeros_like(all_fpr)
         for i, _ in enumerate(classes):
@@ -125,7 +119,7 @@ def plot_roc(
         ax.plot(
             all_fpr,
             mean_tpr,
-            label=f"macro-average ROC curve (area = {roc_auc:.2f})",
+            label=f"macro-average ROC curve (AUC = {roc_auc:.2f})",
             color="navy",
             linestyle=":",
             linewidth=4,
@@ -206,12 +200,8 @@ def plot_precision_recall(
     indices_to_plot = np.isin(classes, classes_to_plot)
     for i, to_plot in enumerate(indices_to_plot):
         if to_plot:
-            average_precision = mt.average_precision_score(
-                binarized_y_true[:, i], y_probas[:, i]
-            )
-            precision, recall, _ = mt.precision_recall_curve(
-                y_true, y_probas[:, i], pos_label=classes[i]
-            )
+            average_precision = mt.average_precision_score(binarized_y_true[:, i], y_probas[:, i])
+            precision, recall, _ = mt.precision_recall_curve(y_true, y_probas[:, i], pos_label=classes[i])
             color = plt.cm.get_cmap(cmap)(float(i) / len(classes))
             class_name = labels[classes[i]] if labels else classes[i]
             ax.plot(
@@ -219,37 +209,61 @@ def plot_precision_recall(
                 precision,
                 lw=2,
                 color=color,
-                label=(
-                    f"Precision-recall curve of class {class_name} "
-                    f"(area = {average_precision:.2f})"
-                ),
+                label=(f"Precision-recall curve of class {class_name} " f"(area = {average_precision:.2f})"),
             )
     if plot_micro:
-        precision, recall, _ = mt.precision_recall_curve(
-            binarized_y_true.ravel(), y_probas.ravel()
-        )
-        average_precision = mt.average_precision_score(
-            binarized_y_true, y_probas, average="micro"
-        )
+        precision, recall, _ = mt.precision_recall_curve(binarized_y_true.ravel(), y_probas.ravel())
+        average_precision = mt.average_precision_score(binarized_y_true, y_probas, average="micro")
         ax.plot(
             recall,
             precision,
             color="deeppink",
             linestyle=":",
             linewidth=4,
-            label=(f"micro-average Precision-recall curve "
-                   f"(area = {average_precision:.2f})"),
+            label=(f"micro-average Precision-recall curve " f"(area = {average_precision:.2f})"),
         )
     ax.set_xlim([0.0, 1.0])
     ax.set_ylim([0.0, 1.05])
-    ax.set_xlabel('Recall')
-    ax.set_ylabel('Precision')
+    ax.set_xlabel("Recall")
+    ax.set_ylabel("Precision")
     ax.tick_params(labelsize=text_fontsize)
-    ax.legend(loc='best', fontsize=text_fontsize)
+    ax.legend(loc="best", fontsize=text_fontsize)
     return ax
 
 
-def plot_cumulative_gain():
+def plot_cumulative_gain(
+    y_true: np.ndarray,
+    y_probas: np.ndarray,
+    title: str = "Cumulative Gains Curve",
+    ax: Optional[matplotlib.axes.Axes] = None,
+    figsize: Optional[Tuple[int, int]] = None,
+    title_fontsize: Optional[int, str] = "large",
+    text_fontsize: Optional[int, str] = "medium",
+):
+    """
+    
+    Parameters
+    ----------
+    y_true : numpy.ndarray
+        [description]
+    y_probas : numpy.ndarray
+        [description]
+    title : str, optional
+        [description], by default "Cumulative Gains Curve"
+    ax : Optional[matplotlib.axes.Axes], optional
+        [description], by default None
+    figsize : Optional[Tuple[int, int]], optional
+        [description], by default None
+    title_fontsize : Optional[int, str], optional
+        [description], by default "large"
+    text_fontsize : Optional[int, str], optional
+        [description], by default "medium"
+    
+    Raises
+    ------
+    NotImplementedError
+        [description]
+    """
     raise NotImplementedError
 
 

@@ -1,6 +1,4 @@
-__all__ = [
-    'cramers_corrected_stat',
-]
+__all__ = ["cramers_corrected_stat"]
 
 
 import numpy as np
@@ -8,38 +6,45 @@ import pandas as pd
 import scipy.stats as ss
 
 
-def cramers_corrected_stat(confusion_matrix: pd.DataFrame):
+def cramers_corrected_stat(contingency_table: pd.DataFrame) -> float:
     """Calculate bias corrected cramer's V
 
-    Arguments:
+    Parameters
     ----------
-    confusion_matrix: pd.DataFrame
+    contingency_table : pandas.DataFrame
         Contingency table of two nominal variables
 
-    Returns:
-    --------
-    cramers_v: float
+    Returns
+    -------
+    cramers_v : float
         Cramer's V value for the input nominal variables
 
-    Examples:
+    Examples
     --------
-    >>> cramers_corrected_stat(pd.crosstab(df['More customer service calls'], df['Churn_Flag']))
-    0.3136
+    >>> import pandas as pd
+    >>> from mymldev.eda import cramers_corrected_stat
+    >>> df = pd.read_csv("titanic_train.csv")
+    >>> cramers_corrected_stat(
+    ...     pd.crosstab(df["Pclass"], df["Survived"])
+    ... )
+    >>> 0.33668387622245516
 
-    References:
-    -----------
+    Notes
+    -----
     Cramer's V is the measure of association between two
     nominal variables, giving a value between 0 and +1
     '0' corresponds to no association
     '1' corresponds to complete association, value can reach 1
     only when two variables are equal to each other.
 
-    [1] https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V
+    References
+    ----------
+    .. [1] https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V
     """
-    chi2 = ss.chi2_contingency(confusion_matrix)[0]
-    n = confusion_matrix.sum().sum()
+    chi2 = ss.chi2_contingency(contingency_table)[0]
+    n = contingency_table.sum().sum()
     phi2 = chi2 / n
-    r, k = confusion_matrix.shape
+    r, k = contingency_table.shape
     phi2corr = max(0, phi2 - ((k - 1) * (r - 1) / (n - 1)))
     rcorr = r - ((r - 1) ** 2) / (n - 1)
     kcorr = k - ((k - 1) ** 2) / (n - 1)
