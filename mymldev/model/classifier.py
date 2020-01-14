@@ -1,23 +1,41 @@
+"""Modified classifiers for customer functionality.
+"""
+
+
+__all__ = ["MXGBClassifier"]
+
+
 from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
 import xgboost as xgb
 
-from ..metrics import BinaryClassificationMetrics, MultiClassClassificationMetrics
-
-__all__ = ["MXGBClassifier"]
-
-
-SEED = 1310
+from ..metrics import (BinaryClassificationMetrics,
+                       MultiClassClassificationMetrics)
 
 
 class MXGBClassifier(xgb.XGBClassifier):
-    """XGBClassifier
+    """Modified XGBClassifier.
     """
 
-    def get_feature_importance(self, importance_type="weight", normalized=False):
+    def get_feature_importance(
+        self, importance_type: str = "weight", normalized: bool = False
+    ) -> pd.DataFrame:
         """XGBoost Classifier feature importance
+
+        Parameters
+        ----------
+        importance_type : str, {"gain", "weight", "cover"}
+            Importance type.
+        normalized : bool
+            Normalize the feature importances
+            (the default is False)
+
+        Returns
+        -------
+        pandas.DataFrame
+            IDV feature importances.
         """
         imp_vals = self.get_booster().get_score(importance_type=importance_type)
         fimp = {

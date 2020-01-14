@@ -1,7 +1,22 @@
+"""Plots for modelling metrics.
+"""
+
+
+__all__ = [
+    "plot_confusion_matrix",
+    "plot_cumulative_gain",
+    "plot_ks_statistic",
+    "plot_lift_curve",
+    "plot_precision_recall",
+    "plot_roc",
+]
+
+
+from typing import Dict, List, Optional, Tuple, Union
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import Union, Optional, List, Tuple, Dict
 import sklearn.metrics as mt
 from scipy import interp
 from sklearn.preprocessing import label_binarize
@@ -9,6 +24,153 @@ from sklearn.preprocessing import label_binarize
 
 def plot_confusion_matrix():
     raise NotImplementedError
+
+
+def plot_cumulative_gain(
+    y_true: np.ndarray,
+    y_probas: np.ndarray,
+    title: str = "Cumulative Gains Curve",
+    ax: Optional[matplotlib.axes.Axes] = None,
+    figsize: Optional[Tuple[int, int]] = None,
+    title_fontsize: Union[int, str] = "large",
+    text_fontsize: Union[int, str] = "medium",
+) -> matplotlib.axes.Axes:
+    """
+    
+    Parameters
+    ----------
+    y_true : numpy.ndarray
+        [description]
+    y_probas : numpy.ndarray
+        [description]
+    title : str, optional
+        [description], by default "Cumulative Gains Curve"
+    ax : Optional[matplotlib.axes.Axes], optional
+        [description], by default None
+    figsize : Optional[Tuple[int, int]], optional
+        [description], by default None
+    title_fontsize : Optional[int, str], optional
+        [description], by default "large"
+    text_fontsize : Optional[int, str], optional
+        [description], by default "medium"
+    
+    Raises
+    ------
+    NotImplementedError
+        [description]
+    """
+    raise NotImplementedError
+
+
+def plot_ks_statistic():
+    raise NotImplementedError
+
+
+def plot_lift_curve():
+    raise NotImplementedError
+
+
+def plot_precision_recall(
+    y_true: np.ndarray,
+    y_probas: np.ndarray,
+    labels: Optional[dict] = None,
+    classes_to_plot: Optional[list] = None,
+    plot_micro: Optional[bool] = False,
+    title: str = "Precision-Recall Curve",
+    ax: Optional[matplotlib.axes.Axes] = None,
+    figsize: Optional[tuple] = None,
+    cmap: Union[str, matplotlib.colors.Colormap] = "Blues",
+    title_fontsize: Union[str, int] = "large",
+    text_fontsize: Union[str, int] = "medium",
+) -> matplotlib.axes.Axes:
+    """Plots precision-recall curve.
+
+    Parameters
+    ----------
+    y_true : numpy.array, (n_samples,)
+        Actual target values.
+    y_probas : numpy.array, (n_samples, n_classes)
+        Predicted probabilities of each class.
+    labels: Optional[dict]
+        labels for y, eg: {0: 'negative', 1: 'positive'}.
+    classes_to_plot : Optional[list]
+        Classes for which the Precision-Recall curve should be plotted.
+        If the class doesn't exists it will be ignored.
+        If ``None``, all classes will be plotted
+        (the default is ``None``).
+    plot_micro : Optional[bool]
+        Plot micro averaged Precision-Recall curve (the default is False)
+    title : str
+        Title for the Precision-Recall curve.
+    ax: Optional[matplotlib.axes.Axes]
+        The axes on which plot was drawn.
+    figsize : Optional[tuple]
+        Size of the plot.
+    cmap : Union[str, matplotlib.colors.Colormap]
+        Colormap used for plotting.
+        https://matplotlib.org/tutorials/colors/colormaps.html
+    title_fontsize : Union[str, int]
+        Use 'small', 'medium', 'large' or integer-values
+        (the default is 'large')
+    text_fontsize : Union[str, int]
+        Use 'small', 'medium', 'large' or integer-values
+        (the default is 'medium')
+
+    Returns
+    -------
+    `matplotlib.axes.Axes` object
+        The axes on which plot was drawn.
+
+    References
+    ----------
+    .. [1] https://github.com/reiinakano/scikit-plot
+    """
+    classes = np.unique(y_true)
+    if not classes_to_plot:
+        classes_to_plot = classes
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize)
+    ax.set_title(label=title, fontsize=title_fontsize)
+    binarized_y_true = label_binarize(y_true, classes=classes)
+    if len(classes) == 2:
+        binarized_y_true = np.hstack((1 - binarized_y_true, binarized_y_true))
+    indices_to_plot = np.isin(classes, classes_to_plot)
+    for i, to_plot in enumerate(indices_to_plot):
+        if to_plot:
+            average_precision = mt.average_precision_score(binarized_y_true[:, i], y_probas[:, i])
+            precision, recall, _ = mt.precision_recall_curve(
+                y_true, y_probas[:, i], pos_label=classes[i]
+            )
+            color = plt.cm.get_cmap(cmap)(float(i) / len(classes))
+            class_name = labels[classes[i]] if labels else classes[i]
+            ax.plot(
+                recall,
+                precision,
+                lw=2,
+                color=color,
+                label=(
+                    f"Precision-recall curve of class {class_name} "
+                    f"(area = {average_precision:.2f})"
+                ),
+            )
+    if plot_micro:
+        precision, recall, _ = mt.precision_recall_curve(binarized_y_true.ravel(), y_probas.ravel())
+        average_precision = mt.average_precision_score(binarized_y_true, y_probas, average="micro")
+        ax.plot(
+            recall,
+            precision,
+            color="deeppink",
+            linestyle=":",
+            linewidth=4,
+            label=(f"micro-average Precision-recall curve " f"(area = {average_precision:.2f})"),
+        )
+    ax.set_xlim([0.0, 1.0])
+    ax.set_ylim([0.0, 1.05])
+    ax.set_xlabel("Recall")
+    ax.set_ylabel("Precision")
+    ax.tick_params(labelsize=text_fontsize)
+    ax.legend(loc="best", fontsize=text_fontsize)
+    return ax
 
 
 def plot_roc(
@@ -24,14 +186,14 @@ def plot_roc(
     cmap: Union[str, matplotlib.colors.Colormap] = "Blues",
     title_fontsize: Union[str, int] = "large",
     text_fontsize: Union[str, int] = "medium",
-):
+) -> matplotlib.axes.Axes:
     """Plot ROC curve.
 
     Parameters
     ----------
-    y_true : numpy.array, (n_samples,)
+    y_true : numpy.ndarray, (n_samples,)
         Actual target values.
-    y_probas : numpy.array, (n_samples, n_classes)
+    y_probas : numpy.ndarray, (n_samples, n_classes)
         Predicted probabilities of each class.
     labels: Optional[dict]
         labels for y.
@@ -131,145 +293,3 @@ def plot_roc(
     ax.tick_params(labelsize=text_fontsize)
     ax.legend(loc="lower right", fontsize=text_fontsize)
     return ax
-
-
-def plot_precision_recall(
-    y_true: np.ndarray,
-    y_probas: np.ndarray,
-    labels: Optional[dict] = None,
-    classes_to_plot: Optional[list] = None,
-    plot_micro: Optional[bool] = False,
-    title: str = "Precision-Recall Curve",
-    ax: Optional[matplotlib.axes.Axes] = None,
-    figsize: Optional[tuple] = None,
-    cmap: Union[str, matplotlib.colors.Colormap] = "Blues",
-    title_fontsize: Union[str, int] = "large",
-    text_fontsize: Union[str, int] = "medium",
-):
-    """Plots precision-recall curve.
-
-    Parameters
-    ----------
-    y_true : numpy.array, (n_samples,)
-        Actual target values.
-    y_probas : numpy.array, (n_samples, n_classes)
-        Predicted probabilities of each class.
-    labels: Optional[dict]
-        labels for y, eg: {0: 'negative', 1: 'positive'}.
-    classes_to_plot : Optional[list]
-        Classes for which the Precision-Recall curve should be plotted.
-        If the class doesn't exists it will be ignored.
-        If ``None``, all classes will be plotted
-        (the default is ``None``).
-    plot_micro : Optional[bool]
-        Plot micro averaged Precision-Recall curve (the default is False)
-    title : str
-        Title for the Precision-Recall curve.
-    ax: Optional[matplotlib.axes.Axes]
-        The axes on which plot was drawn.
-    figsize : Optional[tuple]
-        Size of the plot.
-    cmap : Union[str, matplotlib.colors.Colormap]
-        Colormap used for plotting.
-        https://matplotlib.org/tutorials/colors/colormaps.html
-    title_fontsize : Union[str, int]
-        Use 'small', 'medium', 'large' or integer-values
-        (the default is 'large')
-    text_fontsize : Union[str, int]
-        Use 'small', 'medium', 'large' or integer-values
-        (the default is 'medium')
-
-    Returns
-    -------
-    `matplotlib.axes.Axes` object
-        The axes on which plot was drawn.
-
-    References
-    ----------
-    .. [1] https://github.com/reiinakano/scikit-plot
-    """
-    classes = np.unique(y_true)
-    if not classes_to_plot:
-        classes_to_plot = classes
-    if ax is None:
-        fig, ax = plt.subplots(figsize=figsize)
-    ax.set_title(label=title, fontsize=title_fontsize)
-    binarized_y_true = label_binarize(y_true, classes=classes)
-    if len(classes) == 2:
-        binarized_y_true = np.hstack((1 - binarized_y_true, binarized_y_true))
-    indices_to_plot = np.isin(classes, classes_to_plot)
-    for i, to_plot in enumerate(indices_to_plot):
-        if to_plot:
-            average_precision = mt.average_precision_score(binarized_y_true[:, i], y_probas[:, i])
-            precision, recall, _ = mt.precision_recall_curve(y_true, y_probas[:, i], pos_label=classes[i])
-            color = plt.cm.get_cmap(cmap)(float(i) / len(classes))
-            class_name = labels[classes[i]] if labels else classes[i]
-            ax.plot(
-                recall,
-                precision,
-                lw=2,
-                color=color,
-                label=(f"Precision-recall curve of class {class_name} " f"(area = {average_precision:.2f})"),
-            )
-    if plot_micro:
-        precision, recall, _ = mt.precision_recall_curve(binarized_y_true.ravel(), y_probas.ravel())
-        average_precision = mt.average_precision_score(binarized_y_true, y_probas, average="micro")
-        ax.plot(
-            recall,
-            precision,
-            color="deeppink",
-            linestyle=":",
-            linewidth=4,
-            label=(f"micro-average Precision-recall curve " f"(area = {average_precision:.2f})"),
-        )
-    ax.set_xlim([0.0, 1.0])
-    ax.set_ylim([0.0, 1.05])
-    ax.set_xlabel("Recall")
-    ax.set_ylabel("Precision")
-    ax.tick_params(labelsize=text_fontsize)
-    ax.legend(loc="best", fontsize=text_fontsize)
-    return ax
-
-
-def plot_cumulative_gain(
-    y_true: np.ndarray,
-    y_probas: np.ndarray,
-    title: str = "Cumulative Gains Curve",
-    ax: Optional[matplotlib.axes.Axes] = None,
-    figsize: Optional[Tuple[int, int]] = None,
-    title_fontsize: Optional[int, str] = "large",
-    text_fontsize: Optional[int, str] = "medium",
-):
-    """
-    
-    Parameters
-    ----------
-    y_true : numpy.ndarray
-        [description]
-    y_probas : numpy.ndarray
-        [description]
-    title : str, optional
-        [description], by default "Cumulative Gains Curve"
-    ax : Optional[matplotlib.axes.Axes], optional
-        [description], by default None
-    figsize : Optional[Tuple[int, int]], optional
-        [description], by default None
-    title_fontsize : Optional[int, str], optional
-        [description], by default "large"
-    text_fontsize : Optional[int, str], optional
-        [description], by default "medium"
-    
-    Raises
-    ------
-    NotImplementedError
-        [description]
-    """
-    raise NotImplementedError
-
-
-def plot_lift_curve():
-    raise NotImplementedError
-
-
-def plot_ks_statistic():
-    raise NotImplementedError

@@ -9,13 +9,13 @@ from operator import itemgetter
 def train_feature_value(X, y_true, feature, value):
     """Selects the most frequent class for the given feature-value pair
 
-    Arguments:
+    Parameters
     ----------
-    X: pandas.dataframe
+    X : pandas.dataframe
         Input dataframe
-    feature: str
+    feature : str
         IDV
-    value: int or float or str
+    value : int or float or str
         Value of the corresponding feature
     """
     # Create a simple dictionary to count how frequently 
@@ -63,26 +63,26 @@ def train(X, y_true, feature):
 def rules_from_decision_tree(X, y, tree=False):
     """Get rules for Input data
 
-    Arguments:
+    Parameters
     ----------
-    X: pandas.Series
+    X : pandas.Series
         Input Series
-    y: pandas.Series
+    y : pandas.Series
         DV column
-    tree: bool
+    tree : bool
         If True, return tree
 
-    Returns:
-    --------
-    clf: DecisionTreeClassifier
+    Returns
+    -------
+    clf : DecisionTreeClassifier
         Trained classifier
-    output_str: str
+    output_str : str
         Decision rule
-    tree: str
+    tree : str
         Built tree
 
-    Examples:
-    ---------
+    Examples
+    --------
     >>> tmp = ['age']
     >>> clfs, rules, trees = [], [], []
     >>> for col in tmp:

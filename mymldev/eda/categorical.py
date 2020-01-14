@@ -16,7 +16,7 @@ def cramers_corrected_stat(contingency_table: pd.DataFrame) -> float:
 
     Returns
     -------
-    cramers_v : float
+    float
         Cramer's V value for the input nominal variables
 
     Examples
@@ -27,7 +27,7 @@ def cramers_corrected_stat(contingency_table: pd.DataFrame) -> float:
     >>> cramers_corrected_stat(
     ...     pd.crosstab(df["Pclass"], df["Survived"])
     ... )
-    >>> 0.33668387622245516
+    0.33668387622245516
 
     Notes
     -----

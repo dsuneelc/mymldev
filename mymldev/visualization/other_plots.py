@@ -1,23 +1,15 @@
-#!/usr/bin/env python3
-#-*- coding: utf-8 -*-
+"""Misc
 """
-Filename: other_plots
-Date: 2019-05-10 10:55
-Project: AXA
-AUTHOR: Suneel Dondapati
-"""
+
+
+__all__ = ['plot_dendrogram']
 
 
 import numpy as np
 from scipy.cluster.hierarchy import dendrogram
 
-__all__ = [
-    'plot_dendrogram',
-]
-
 
 def plot_dendrogram(model, **kwargs):
-
     # Children of hierarchical clustering
     children = model.children_
     # Distances between each pair of children
@@ -29,4 +21,3 @@ def plot_dendrogram(model, **kwargs):
     linkage_matrix = np.column_stack([children, distance, no_of_observations]).astype(float)
     # Plot the corresponding dendrogram
     dendrogram(linkage_matrix, **kwargs)
-

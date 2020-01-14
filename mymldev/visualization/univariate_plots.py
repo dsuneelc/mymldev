@@ -1,9 +1,3 @@
-from matplotlib.ticker import PercentFormatter
-from scipy.stats import skew, kurtosis
-from typing import Tuple
-import matplotlib.pyplot as plt
-import pandas as pd
-
 
 __all__ = [
     'univariate_plot',
@@ -13,20 +7,27 @@ __all__ = [
 ]
 
 
+from matplotlib.ticker import PercentFormatter
+from scipy.stats import skew, kurtosis
+from typing import Tuple
+import matplotlib.pyplot as plt
+import pandas as pd
+
+
 def univariate_plot_v2(independent_variable: pd.Series, 
                        dependent_variable: pd.Series):
     """
     Plots histogram and KDE for continous variable
     
-    Aguments:
-    ---------
+    Parameters
+    ----------
     independent_variable: pd.Series
         Independent feature column
     dependent_variable: pd.Series
         Target column
     
-    Returns:
-    --------
+    Returns
+    -------
     Plots univariate subplots
     """
     import matplotlib.pyplot as plt
@@ -56,19 +57,20 @@ def univariate_plot_v2(independent_variable: pd.Series,
     fig.subplots_adjust(top=0.88)
     plt.show()
     
+
 def univariate_plot(df, feature):
     """
     Plots histogram and KDE for continous variable
     
-    Aguments:
-    ---------
+    Parameters
+    ----------
     df: pd.DataFrame
         Input data frame
     feature: str
         Feature on which univariate analysis has to performed
     
-    Returns:
-    --------
+    Returns
+    -------
     Plots univariate subplots
     """
     import matplotlib.pyplot as plt
@@ -99,20 +101,20 @@ def univariate_plot(df, feature):
 def boxplot_summary(column: pd.Series):
     """Get summary stats of box-plot
     
-    Arguments:
+    Parameters
     ----------
     column: pd.Series
         Input column for summary
         
-    Returns:
-    --------
+    Returns
+    -------
     Summary of the box-plot
     
-    Example:
+    Examples
     --------
     >>> boxplot_summary(df['column'])
 
-    Reference:
+    References
     ----------
     Skewness: Skewness for normal distribution is zero.
               Any symmetric data should have a skewness near to zero.
@@ -148,7 +150,7 @@ def pareto_plot(column: pd.Series,
     """
     Draw Pareto plot for categorical variable
 
-    Arguments:
+    Parameters
     ----------
     column: pd.Series
         Categorical input
@@ -157,7 +159,7 @@ def pareto_plot(column: pd.Series,
     return_freq_df: bool
         Returns frequency dataframe if True
 
-    Example:
+    Examples
     --------
     >>> pareto_plot(df['state'], figsize=(20, 10))
 

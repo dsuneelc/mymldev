@@ -1,12 +1,15 @@
 """Classification metrics.
 """
 
+
 __all__ = ["ConfusionMatrix", "BinaryClassificationMetrics", "MultiClassClassificationMetrics"]
 
 
+from typing import Optional
 import numpy as np
 import pandas as pd
 import sklearn.metrics as mt
+import matplotlib as mpl
 
 from ..visualization.metrics import plot_precision_recall, plot_roc
 
@@ -22,7 +25,7 @@ class ConfusionMatrix:
         Predicted values.
     """
 
-    def __init__(self, y: np.ndarray, y_hat: np.ndarray):
+    def __init__(self, y: np.ndarray, y_hat: np.ndarray) -> None:
         self.y = y
         self.y_hat = y_hat
         self.__binary_y = self.__is_y_binary()
@@ -32,18 +35,11 @@ class ConfusionMatrix:
         self._tp = np.array([])
         self._tn = np.array([])
 
-    def __is_y_binary(self):
+    def __is_y_binary(self) -> bool:
         """bool: Check whether dependent variable is binary or not."""
         return len(np.unique(self.y_hat)) == 2
 
-    @property
-    def table_(self):
-        """numpy.ndarray: Confusion Matrix."""
-        if not self._cfm.size:
-            self._cfm = mt.confusion_matrix(self.y, self.y_hat)
-        return self._cfm
-
-    def __cfm_metric(self, value):
+    def __cfm_metric(self, value: np.ndarray) -> np.ndarray:
         """Computes metric based on classification type.
 
         Parameters
@@ -63,17 +59,14 @@ class ConfusionMatrix:
         return value
 
     @property
-    def fp_(self):
-        """float, for binary classification else numpy.ndarray:
-        False Positives.
-        """
-        if not self._fp.size:
-            fp = self.table_.sum(axis=0) - np.diag(self.table_)
-            self._fp = self.__cfm_metric(fp)
-        return self._fp
+    def table_(self) -> np.ndarray:
+        """numpy.ndarray: Confusion Matrix."""
+        if not self._cfm.size:
+            self._cfm = mt.confusion_matrix(self.y, self.y_hat)
+        return self._cfm
 
     @property
-    def fn_(self):
+    def fn_(self) -> float:
         """float, for binary classification else numpy.ndarray:
         False Negatives.
         """
@@ -83,7 +76,26 @@ class ConfusionMatrix:
         return self._fn
 
     @property
-    def tp_(self):
+    def fp_(self) -> float:
+        """float, for binary classification else numpy.ndarray:
+        False Positives.
+        """
+        if not self._fp.size:
+            fp = self.table_.sum(axis=0) - np.diag(self.table_)
+            self._fp = self.__cfm_metric(fp)
+        return self._fp
+
+    @property
+    def tn_(self) -> float:
+        """float, for binary classification else numpy.ndarray:
+        True Negatives.
+        """
+        if not self._tn.size:
+            self._tn = self.table_.sum() - (self.fp_ + self.fn_ + self.tp_)
+        return self._tn
+
+    @property
+    def tp_(self) -> float:
         """float, for binary classification else numpy.ndarray:
         True Positives.
         """
@@ -93,83 +105,74 @@ class ConfusionMatrix:
         return self._tp
 
     @property
-    def tn_(self):
-        """float, for binary classification else numpy.ndarray:
-        True Negatives.
-        """
-        if not self._tn.size:
-            self._tn = self.table_.sum() - (self.fp_ + self.fn_ + self.tp_)
-        return self._tn
-
-    @property
-    def recall_(self):
-        """float, for binary classification else numpy.ndarray:
-        Sensitivity, Recall, Hit rate, or True Positive Rate.
-        """
-        return self.tp_ / (self.tp_ + self.fn_)
-
-    @property
-    def specificity_(self):
-        """float, for binary classification else numpy.ndarray:
-        Specificity, Selectivity, or True Negative Rate.
-        """
-        return self.tn_ / (self.tn_ + self.fp_)
-
-    @property
-    def precision_(self):
-        """float, for binary classification else numpy.ndarray:
-        Precision or Positive Predictive Value.
-        """
-        return self.tp_ / (self.tp_ + self.fp_)
-
-    @property
-    def negative_predictive_value_(self):
-        """float, for binary classification else numpy.ndarray:
-        Negative Predictive Value.
-        """
-        return self.tn_ / (self.tn_ + self.fn_)
-
-    @property
-    def false_negative_rate_(self):
-        """float, for binary classification else numpy.ndarray:
-        False Negative Rate or Miss Rate.
-        """
-        return self.fn_ / (self.fn_ + self.tp_)
-
-    @property
-    def false_positive_rate_(self):
-        """float, for binary classification else numpy.ndarray:
-        False Positive Rate or Fall-out.
-        """
-        return self.fp_ / (self.fp_ + self.tn_)
-
-    @property
-    def false_discovery_rate_(self):
-        """float, for binary classification else numpy.ndarray:
-        False Discovery Rate.
-        """
-        return self.fp_ / (self.fp_ + self.tp_)
-
-    @property
-    def false_omission_rate_(self):
-        """float, for binary classification else numpy.ndarray:
-        False Omission Rate.
-        """
-        return self.fn_ / (self.fn_ + self.tn_)
-
-    @property
-    def accuracy_(self):
+    def accuracy_(self) -> float:
         """float, for binary classification else numpy.ndarray:
         Accuracy.
         """
         return (self.tp_ + self.tn_) / (self.tp_ + self.tn_ + self.fp_ + self.fn_)
 
     @property
-    def f1_score_(self):
+    def false_discovery_rate_(self) -> float:
+        """float, for binary classification else numpy.ndarray:
+        False Discovery Rate.
+        """
+        return self.fp_ / (self.fp_ + self.tp_)
+
+    @property
+    def false_negative_rate_(self) -> float:
+        """float, for binary classification else numpy.ndarray:
+        False Negative Rate or Miss Rate.
+        """
+        return self.fn_ / (self.fn_ + self.tp_)
+
+    @property
+    def false_omission_rate_(self) -> float:
+        """float, for binary classification else numpy.ndarray:
+        False Omission Rate.
+        """
+        return self.fn_ / (self.fn_ + self.tn_)
+
+    @property
+    def false_positive_rate_(self) -> float:
+        """float, for binary classification else numpy.ndarray:
+        False Positive Rate or Fall-out.
+        """
+        return self.fp_ / (self.fp_ + self.tn_)
+
+    @property
+    def f1_score_(self) -> float:
         """float, for binary classification else numpy.ndarray:
         F1 Score.
         """
         return (2 * self.tp_) / (2 * self.tp_ + self.fp_ + self.fn_)
+
+    @property
+    def negative_predictive_value_(self) -> float:
+        """float, for binary classification else numpy.ndarray:
+        Negative Predictive Value.
+        """
+        return self.tn_ / (self.tn_ + self.fn_)
+
+    @property
+    def precision_(self) -> float:
+        """float, for binary classification else numpy.ndarray:
+        Precision or Positive Predictive Value.
+        """
+        return self.tp_ / (self.tp_ + self.fp_)
+
+    @property
+    def recall_(self) -> float:
+        """float, for binary classification else numpy.ndarray:
+        Sensitivity, Recall, Hit rate, or True Positive Rate.
+        """
+        return self.tp_ / (self.tp_ + self.fn_)
+
+    @property
+    def specificity_(self) -> float:
+        """float, for binary classification else numpy.ndarray:
+        Specificity, Selectivity, or True Negative Rate.
+        """
+        return self.tn_ / (self.tn_ + self.fp_)
 
     def __getattribute__(self, item):
         if item in {
@@ -195,77 +198,50 @@ class BinaryClassificationMetrics:
 
     Parameters
     ----------
-    model: Classifier
+    model : Classifier
         Trained classification model.
-    X: pandas.DataFrame
+    X : pandas.DataFrame
         IDVs.
-    y: pandas.Series
+    y : pandas.Series
         DV.
-    labels: dict, optional; default = {0: 0, 1: 1}
-        labels for y, eg: {0: 'negative', 1: 'positive'}.
+    labels : Optional[dict]
+        labels for y, eg: {0: 'negative', 1: 'positive'}
+        (the default is, {0: 0, 1: 1}).
 
     Attributes
     ----------
-    predicted_proba: numpy.ndarray
+    predicted_proba : numpy.ndarray
         predicted probabilities from IDVs based on given model.
-    target_proba: numpy.ndarray
+    target_proba : numpy.ndarray
         predicted probabilities from IDVs based on given model,
         assuming 'target' is '1'.
-    cfm: pandas.DataFrame
+    cfm : pandas.DataFrame
         Confusion Matrix.
+    confusion_matrix : :obj:`ConfusionMatrix`
+        Confusion Matrix object.
     """
 
-    cfm: pd.DataFrame
-
-    def __init__(self, model, X: pd.DataFrame, y: pd.Series, labels: dict = None):
+    def __init__(self, model, X: pd.DataFrame, y: pd.Series, labels: Optional[dict] = None) -> None:
         self.model = model
         self.X = X
         self.y = y
-        self.predicted_proba = self.model.predict_proba(self.X)
         self.labels = labels
+        self.predicted_proba = self.model.predict_proba(self.X)
         self.target_proba = self.predicted_proba[:, 1]
+        self.cfm = pd.DataFrame()
+        self.confusion_matrix = ConfusionMatrix(self.y.values, self.y_hat)
+        self._gains_table = pd.DataFrame()
         self._threshold: float = 0.5
         self._y_hat = None
-        self.cfm = pd.DataFrame()
-        self._gains_table = pd.DataFrame()
         self.__fpr, self.__tpr, _ = mt.roc_curve(self.y.values, self.target_proba)
 
     @property
-    def auc_(self):
+    def auc_(self) -> float:
         """float: Area Under the Curve."""
         return mt.auc(self.__fpr, self.__tpr)
 
     @property
-    def gini_coefficient_(self):
-        """float: Gini Coefficient"""
-        return (self.auc_ - 0.5) / 0.5
-
-    @property
-    def plot_roc_(self):
-        """`matplotlib.axes.Axes`: Plots ROC curve."""
-        ax = plot_roc(self.y, self.predicted_proba, labels=self.labels, classes_to_plot=[1])
-        return ax
-
-    @property
-    def plot_precision_recall_(self):
-        """`matplotlib.axes.Axes`: Plots Precision-Recall curve."""
-        ax = plot_precision_recall(self.y, self.predicted_proba, labels=self.labels, classes_to_plot=[1])
-        return ax
-
-    @property
-    def plot_cumulative_gain_(self):
-        raise NotImplementedError
-
-    @property
-    def plot_lift_curve_(self):
-        raise NotImplementedError
-
-    @property
-    def plot_ks_statistic_(self):
-        raise NotImplementedError
-
-    @property
-    def gains_table_(self):
+    def gains_table_(self) -> pd.DataFrame:
         """`pandas.DataFrame`: Gains table."""
         if self._gains_table.empty:
             df = pd.DataFrame()
@@ -277,7 +253,10 @@ class BinaryClassificationMetrics:
                 df["Decile"] = pd.qcut(df["pred_prob"].rank(method="first"), 10, labels=False)
             df = df.rename_axis("unique_id").reset_index()
             lift_df = (
-                df.groupby(["Decile", "y"])["unique_id"].count().unstack("y").sort_index(ascending=False)
+                df.groupby(["Decile", "y"])["unique_id"]
+                .count()
+                .unstack("y")
+                .sort_index(ascending=False)
             )
             lift_df = lift_df.fillna(0).astype(int)
             lift_df.index = np.arange(10)
@@ -306,18 +285,43 @@ class BinaryClassificationMetrics:
         return self._gains_table
 
     @property
-    def lift_score_(self):
+    def gini_coefficient_(self) -> float:
+        """float: Gini Coefficient"""
+        return (self.auc_ - 0.5) / 0.5
+
+    @property
+    def lift_score_(self) -> float:
         """float: Lift score."""
         return self.gains_table_["Lift"].iloc[0]
 
     @property
-    def y_hat(self):
-        """`numpy.ndarray`: Predicted values."""
-        self._y_hat = (self.target_proba > self.threshold).astype(bool)
-        return self._y_hat
+    def plot_cumulative_gain_(self) -> mpl.axes.Axes:
+        pass
 
     @property
-    def threshold(self):
+    def plot_ks_statistic_(self) -> mpl.axes.Axes:
+        pass
+
+    @property
+    def plot_lift_curve_(self) -> mpl.axes.Axes:
+        pass
+
+    @property
+    def plot_precision_recall_(self) -> mpl.axes.Axes:
+        """`matplotlib.axes.Axes`: Plots Precision-Recall curve."""
+        ax = plot_precision_recall(
+            self.y, self.predicted_proba, labels=self.labels, classes_to_plot=[1]
+        )
+        return ax
+
+    @property
+    def plot_roc_(self) -> mpl.axes.Axes:
+        """`matplotlib.axes.Axes`: Plots ROC curve."""
+        ax = plot_roc(self.y, self.predicted_proba, labels=self.labels, classes_to_plot=[1])
+        return ax
+
+    @property
+    def threshold(self) -> float:
         """float: Threshold chosen.
 
         Set the threshold, else it defaults to 0.5.
@@ -325,33 +329,28 @@ class BinaryClassificationMetrics:
         return self._threshold
 
     @threshold.setter
-    def threshold(self, threshold):
+    def threshold(self, threshold: float) -> None:
         if not (0 < threshold < 1):
             raise ValueError("Invalid 'threshold'. It should be in range of (0, 1)")
         self._threshold = threshold
-
-    def confusion_matrix(self, threshold: float = None):
-        """Confusion matrix for the given threshold
-
-        Parameters
-        ----------
-        threshold: float
-            Threshold with range (0, 1).
-
-        Returns
-        -------
-        confusion_matrix: ConfusionMatrix
-            Confusion matrix object.
-        """
-        self.threshold = self.threshold if not threshold else threshold
-        confusion_matrix = ConfusionMatrix(self.y.values, self.y_hat)
+        self.confusion_matrix = ConfusionMatrix(self.y.values, self.y_hat)
         if not self.labels:
             self.labels = {}
         label_0 = self.labels.get(0, 0)
         label_1 = self.labels.get(1, 1)
-        table = pd.DataFrame(confusion_matrix.table_, columns=[label_0, label_1], index=[label_0, label_1])
-        self.cfm = table.rename_axis(f"threshold ({self.threshold})").reset_index()
-        return confusion_matrix
+        self.cfm = (
+            pd.DataFrame(
+                self.confusion_matrix.table_, columns=[label_0, label_1], index=[label_0, label_1]
+            )
+            .rename_axis(f"threshold ({self.threshold})")
+            .reset_index()
+        )
+
+    @property
+    def y_hat(self) -> np.ndarray:
+        """`numpy.ndarray`: Predicted values."""
+        self._y_hat = (self.target_proba > self.threshold).astype(bool)
+        return self._y_hat
 
 
 class MultiClassClassificationMetrics:
