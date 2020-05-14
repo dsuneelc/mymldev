@@ -1,0 +1,49 @@
+problem: null # allowed values, {"classification", "regression", null}
+
+eda_run:
+  contingency_table:
+      val: false  # If val is 'false', then this analysis will not run.
+      columns: null
+  descriptive_stats:
+      val: true
+      columns: null   # If columns is 'null' and val is 'true', then all columns are considered.
+  correlation_table:
+      val: true
+      columns: null
+  information_gain:
+      val: true
+      columns: null
+  chi_square:
+      val: false
+      columns: null   
+  anova:
+      val: false
+      columns: null
+  head:
+      val: false
+      columns: null
+  tail: 
+      val: false
+      columns: null
+  distributions:
+      val: true
+      columns: null
+eda_config:
+  histogram_bin: 10
+  value_counts_limit: 15
+  cardinality_limit: 15
+
+target: null # {null, "any other column"}
+
+# columns:
+#     - name: age
+#       type: numerical
+#     - name: gender
+#       type: categorical
+#     - name: message
+#       type: text
+#     - name: chrun_out
+#       type: categorical
+# supported types, {"numerical", "categorical", "text"}
+columns: null # if "null" considers all columns
+

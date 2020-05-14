@@ -1,0 +1,68 @@
+# If columns have type_class 'null', then those columns are not used for analysis.
+# If eda_run with val 'false', then analysis is not performed.
+# If eda_run with val 'true' and columns 'null', then all the columns are considered for analysis.
+# If eda_run with val 'true' and list of columns specified, then only those columns are used for analysis.
+# Specify target with Dependent variable column name.
+# Specify problem with "classification" or "regression".
+
+columns:
+  numerical:
+  categorical:
+- name: PassengerId
+  type_class: numerical
+- name: Survived
+  type_class: numerical
+- name: Pclass
+  type_class: numerical
+- name: Name
+  type_class: categorical
+- name: Sex
+  type_class: categorical
+- name: Age
+  type_class: numerical
+- name: SibSp
+  type_class: numerical
+- name: Parch
+  type_class: numerical
+- name: Ticket
+  type_class: categorical
+- name: Fare
+  type_class: numerical
+- name: Cabin
+  type_class: categorical
+- name: Embarked
+  type_class: categorical
+eda_config:
+  cardinality_limit: 15
+  histogram_bin: 10
+  value_counts_limit: 15
+eda_run:
+  anova:
+    columns: null
+    val: false
+  chi_square:
+    columns: null
+    val: false
+  contingency_table:
+    columns: null
+    val: false
+  correlation_table:
+    columns: null
+    val: true
+  descriptive_stats:
+    columns: null
+    val: true
+  distributions:
+    columns: null
+    val: true
+  head:
+    columns: null
+    val: false
+  information_gain:
+    columns: null
+    val: true
+  tail:
+    columns: null
+    val: false
+problem: null
+target: null

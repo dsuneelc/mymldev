@@ -198,20 +198,16 @@ class BinaryClassificationMetrics:
 
     Parameters
     ----------
-    model : Classifier
-        Trained classification model.
-    X : pandas.DataFrame
-        IDVs.
     y : pandas.Series
         DV.
+    predicted_proba : Union[pandas.DataFrame, pd.Series]
+        predicted probabilities from IDVs based on given model.
     labels : Optional[dict]
         labels for y, eg: {0: 'negative', 1: 'positive'}
         (the default is, {0: 0, 1: 1}).
 
     Attributes
     ----------
-    predicted_proba : numpy.ndarray
-        predicted probabilities from IDVs based on given model.
     target_proba : numpy.ndarray
         predicted probabilities from IDVs based on given model,
         assuming 'target' is '1'.
@@ -221,13 +217,11 @@ class BinaryClassificationMetrics:
         Confusion Matrix object.
     """
 
-    def __init__(self, model, X: pd.DataFrame, y: pd.Series, labels: Optional[dict] = None) -> None:
-        self.model = model
-        self.X = X
+    def __init__(self, y: pd.Series, predicted_proba: Union[pd.DataFrame, pd.Series], labels: Optional[dict] = None) -> None:
         self.y = y
         self.labels = labels
-        self.predicted_proba = self.model.predict_proba(self.X)
-        self.target_proba = self.predicted_proba[:, 1]
+        self.predicted_proba = predicted_proba
+        self.target_proba = self.predicted_proba[:, 1] if isinstance(predicted_proba, pd.DataFrame) else predicted_proba
         self.cfm = pd.DataFrame()
         self.confusion_matrix = ConfusionMatrix(self.y.values, self.y_hat)
         self._gains_table = pd.DataFrame()
